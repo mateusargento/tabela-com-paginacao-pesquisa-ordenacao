@@ -1,0 +1,65 @@
+:root {
+    --contentWidth: 80%;
+    --backgroundColorLight: #f0f0f0;
+    --fontColorLight: #0f0f0f;
+    --backgroundColorDark: #0f0f0f;
+    --fontColorDark: #f0f0f0;
+    --gap: 4px;
+}
+
+* {
+    font-size: 14px;
+}
+
+main {
+    width: 100%;
+    min-height: 100vh;
+    color: light-dark(var(--fontColorLight), var(--fontColorDark));
+    background-color: light-dark(var(--backgroundColorLight), var(--backgroundColorDark));
+    display: flex;
+    justify-content: center;
+    color-scheme: light;
+    transition: 0.2s;
+}
+
+.content {
+    width: var(--contentWidth);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--gap) * 4);
+}
+
+.theme {
+    display: flex;
+    flex-direction: row;
+    gap: var(--gap);
+}
+
+.inputs {
+    display: grid;
+    grid-template-columns: calc(var(--contentWidth) / 2) auto;
+    align-items: flex-end;
+}
+
+.buttons {
+    height: min-content;
+    display: flex;
+    gap: var(--gap);
+    justify-content: flex-end;
+}
+
+.tableComponent td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.tableComponent td input[type=radio] {
+    transition: 0.1s;
+}
+
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+}
