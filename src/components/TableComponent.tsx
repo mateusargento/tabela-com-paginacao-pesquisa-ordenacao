@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Badge, Button, Form, FormCheck, Modal, Pagination, Table, Toast } from 'react-bootstrap'
+import { Badge, Button, Form, FormCheck, Modal, Pagination, Table } from 'react-bootstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAdd, faEdit, faMoon, faSun, faTrash } from '@fortawesome/free-solid-svg-icons'
 import json from '../mock/mockData.json'
@@ -16,8 +16,9 @@ export default function TableComponent() {
   const [searchInput, setSearchInput] = useState<string>('')
   // Table
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>()
-  const [data, setData] = useState<Array<any>>(json)
-  const [tableData, setTableData] = useState<Array<any>>([])
+  const [data, setData] = useState<Array<any>>(json) // Guarda o dado original vindo por JSON
+  const [dataFormatted, setDataFormatted] = useState<Array<any>>(json) // Guarda o dado manipulado por filtro, ordenação ou paginação
+  const [tableData, setTableData] = useState<Array<any>>([]) // O que é mostrado na tabela
   // Modal
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [modalData, setModalData] = useState<{
@@ -34,65 +35,6 @@ export default function TableComponent() {
     // Faz a paginação inicial
     handlePagination(1)
   }, [])
-
-  // Paginação
-  const rowsPerPage = 10
-  function paginationItens(): JSX.Element[] {
-    if (data.length <= 0) return []
-
-    let paginationItens: Array<JSX.Element> = []
-
-    //Divide a quantidade de dados pelo linhas por página na tabela
-    const totalPages = Math.ceil((data.length / rowsPerPage))
-
-    // Gera os botões da paginação
-    for (let i = 1; i <= totalPages; i++) {
-      paginationItens.push(<Pagination.Item
-        onClick={() => handlePagination(i)}
-        active={currentPage == i && true}
-      >
-        {i}
-      </Pagination.Item>)
-    }
-
-    return paginationItens
-  }
-  function handlePagination(page: number): void {
-    if (data.length <= 0) return
-    const inputsRadio: any = document.querySelectorAll('input[type=radio]')
-    if (inputsRadio.length > 0) {
-      for (let i = 0; i < inputsRadio.length; i++) {
-        inputsRadio[i].checked = false
-      }
-      setSelectedIndex(undefined)
-    }
-
-    /*
-      Separa os registros em páginas
-      
-      Exemplo: 
-      A variável "page" define a página solicitada, que neste exemplo é igual a 2
-      A variável "rowsPerPage" é igual a 10.
-      A variável "firstRowIndex" terá o valor ((10 * 2) - 10) = 10
-      A variável "lastRowIndex" terá o valor ((10 * 2)) = 20
-      A função slice separa os dados entre os indexs 10 e 20 que resultará nos indexs 10 ao 19 como resultado
-    */
-    const firstRowIndex = ((rowsPerPage * page) - rowsPerPage)
-    const lastRowIndex = ((rowsPerPage * page))
-
-    const result = data.slice(firstRowIndex, lastRowIndex)
-    setTableData(result)
-    setCurrentPage(page)
-  }
-
-  function handleSelect(id: string): void {
-    // Set for enviado o id corretamente
-    if (!id) return
-
-    // Seleciona a linha
-    document.getElementById(id)!.click()
-    setSelectedIndex(parseInt(id) - 1)
-  }
 
   function handleButtonAction(action: 'add' | 'edit' | 'delete'): void {
     // Personaliza o modal conforme o botão selecionado
@@ -147,6 +89,93 @@ export default function TableComponent() {
     setIsModalOpen(true)
   }
 
+  // Paginação
+  const rowsPerPage = 10
+  function paginationItens(): JSX.Element[] {
+    if (dataFormatted.length <= 0) return []
+
+    let paginationItens: Array<JSX.Element> = []
+    //Divide a quantidade de dados pelo linhas por página na tabela
+    const totalPages: number = Math.ceil((dataFormatted.length / rowsPerPage))
+
+    // Gera os botões da paginação
+    for (let i: number = 1; i <= totalPages; i++) {
+      paginationItens.push(<Pagination.Item
+        onClick={() => handlePagination(i)}
+        active={currentPage == i && true}
+        key={i}
+      >
+        {i}
+      </Pagination.Item>)
+    }
+
+    return paginationItens
+  }
+  function handlePagination(page: number): void {
+    if (data.length <= 0) return
+
+    // Desmarca o "input radio" selecionado, caso haja, antes de trocar de página
+    const inputsRadio: any = document.querySelectorAll('input[type=radio]')
+    if (inputsRadio.length > 0) {
+      for (let i = 0; i < inputsRadio.length; i++) {
+        inputsRadio[i].checked = false
+      }
+
+      setSelectedIndex(undefined)
+    }
+
+    /*
+      Separa os registros em páginas
+      
+      Exemplo: 
+      A variável "page" define a página solicitada, que neste exemplo é igual a 2
+      A variável "rowsPerPage" é igual a 10.
+      A variável "firstRowIndex" terá o valor ((10 * 2) - 10) = 10
+      A variável "lastRowIndex" terá o valor ((10 * 2)) = 20
+      A função slice separa os dados entre os indexs 10 e 20 que resultará nos indexs 10 ao 19 como resultado
+    */
+    const firstRowIndex: number = ((rowsPerPage * page) - rowsPerPage)
+    const lastRowIndex: number = ((rowsPerPage * page))
+
+    const result: any[] = dataFormatted.slice(firstRowIndex, lastRowIndex)
+    setTableData(result)
+    setCurrentPage(page)
+  }
+
+  function handleSearch(searchValue: string): void {
+    if (data.length <= 0) return
+    handlePagination(1)
+    if (searchValue == '') {
+      setDataFormatted(data)
+      setTableData(data.slice(0, 10))
+      return
+    }
+
+    const allColumns: string[] = Object.keys(data[0])
+
+    // Busca em todas as colunas se existe algum dado relacionado ao que foi pesquisado
+    const searchList = data.filter((item: any) => {
+      for (let i = 0; i < allColumns.length; i++) {
+        const searchValueFormatted: string = searchValue.trim().toLowerCase()
+        const itemColumnFormatted: string = item[allColumns[i]].toString().trim().toLowerCase()
+
+        if (searchValueFormatted == itemColumnFormatted) return item
+      }
+    })
+
+    setDataFormatted(searchList)
+    setTableData(searchList.slice(0, 10))
+  }
+
+  function handleSelectTableRow(id: string): void {
+    // Set for enviado o id corretamente
+    if (!id) return
+
+    // Seleciona a linha
+    document.getElementById(id)!.click()
+    setSelectedIndex(parseInt(id) - 1)
+  }
+
   function handleTheme(): void {
     let main: HTMLElement = document.getElementsByTagName('main')[0]
 
@@ -172,9 +201,9 @@ export default function TableComponent() {
           </Form.Label>
           <FormCheck
             type='switch'
-            checked={theme == 'dark' ? true : false}
             id='theme'
-            onClick={() => handleTheme()}
+            checked={theme == 'dark' ? true : false}
+            onChange={() => handleTheme()}
           />
           <Form.Label htmlFor='theme'>
             <FontAwesomeIcon icon={faMoon} width={'12px'} />
@@ -188,8 +217,10 @@ export default function TableComponent() {
             <Form.Control
               type='text'
               id='searchInput'
+              autoComplete='off'
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
+              onKeyUp={() => handleSearch(searchInput)}
               className={style.searchInput}
             />
           </Form>
@@ -229,7 +260,7 @@ export default function TableComponent() {
                   return (
                     <tr
                       className='d-flex'
-                      onClick={() => handleSelect(item.id.toString())}
+                      onClick={() => handleSelectTableRow(item.id.toString())}
                       key={index}
                     >
                       <td className='col-1'>
@@ -264,16 +295,17 @@ export default function TableComponent() {
               />
               {paginationItens()}
               <Pagination.Next
-                disabled={currentPage == Math.ceil(data.length / rowsPerPage) ? true : false}
+                disabled={currentPage == Math.ceil(dataFormatted.length / rowsPerPage) ? true : false}
                 onClick={() => handlePagination(currentPage! + 1)}
               />
               <Pagination.Last
-                disabled={currentPage == Math.ceil(data.length / rowsPerPage) ? true : false}
-                onClick={() => handlePagination(Math.ceil(data.length / rowsPerPage))} />
+                disabled={currentPage == Math.ceil(dataFormatted.length / rowsPerPage) ? true : false}
+                onClick={() => handlePagination(Math.ceil(dataFormatted.length / rowsPerPage))} />
             </Pagination>
           </div>
         </div>
 
+        {/* Modal */}
         <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} data-bs-theme={theme}>
           <Modal.Header closeButton>
             <Modal.Title>{modalData.title}</Modal.Title>
