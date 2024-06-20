@@ -1,40 +1,48 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button, Form, FormCheck, Modal, Pagination, Table } from 'react-bootstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAdd, faEdit, faMoon, faSun, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faAdd, faEdit, faMoon, faSort, faSortDown, faSortUp, faSun, faTrash } from '@fortawesome/free-solid-svg-icons'
 import json from '../mock/mockData.json'
 import style from './TableComponent.module.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import toast from 'react-hot-toast'
 
 export default function TableComponent() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [idInput, setIDInput] = useState<number | undefined>()
   const [nameInput, setNameInput] = useState<string>('')
-  const [surnameInput, setSurnameInput] = useState<string>('')
-  const [statusInput, setStatusInput] = useState<'Active' | 'Inactive'>('Active')
   const [searchInput, setSearchInput] = useState<string>('')
+  const [statusInput, setStatusInput] = useState<'Active' | 'Inactive'>('Active')
+  const [surnameInput, setSurnameInput] = useState<string>('')
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   // Table
-  const [selectedIndex, setSelectedIndex] = useState<number | undefined>()
-  const [data, setData] = useState<Array<any>>(json) // Guarda o dado original vindo por JSON
+  const [data, _] = useState<Array<any>>(json) // Guarda o dado original vindo por JSON
+  const [dataKeys, __] = useState<string[]>(Object.keys(json[0]))
   const [dataFormatted, setDataFormatted] = useState<Array<any>>(json) // Guarda o dado manipulado por filtro, ordenação ou paginação
+  const [selectedIndex, setSelectedIndex] = useState<number | undefined>()
+  const [sortColumn, setSortColumn] = useState<{ column: string, orderBy: 'asc' | 'desc' }>({
+    column: '',
+    orderBy: 'desc',
+  })
   const [tableData, setTableData] = useState<Array<any>>([]) // O que é mostrado na tabela
+  const [tableStyle, ___] = useState<{type: string, columnsSize: string[]}>({
+    type: 'd-flex',
+    columnsSize: ['col-1', 'col-2', 'col-4', 'col-4', 'col-1']
+  })
   // Modal
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
-  const [modalData, setModalData] = useState<{
-    title: string,
-    isAllInputsDisabled: boolean,
-  }>({
+  const [modalData, setModalData] = useState<{ title: string, isAllInputsDisabled: boolean, }>({
     title: '',
     isAllInputsDisabled: false
   })
   // Paginação
   const [currentPage, setCurrentPage] = useState<number>()
 
+
   useEffect(() => {
     // Faz a paginação inicial
     handlePagination(1)
   }, [])
+
 
   function handleButtonAction(action: 'add' | 'edit' | 'delete'): void {
     // Personaliza o modal conforme o botão selecionado
@@ -64,10 +72,10 @@ export default function TableComponent() {
         })
 
         // Dados para os inputs do modal
-        setIDInput(data[selectedIndex].id)
-        setNameInput(data[selectedIndex].name)
-        setSurnameInput(data[selectedIndex].surname)
-        setStatusInput(data[selectedIndex].status)
+        setIDInput(tableData[selectedIndex].id)
+        setNameInput(tableData[selectedIndex].name)
+        setSurnameInput(tableData[selectedIndex].surname)
+        setStatusInput(tableData[selectedIndex].status)
         break
       case 'delete':
         // Não permite continuar sem que nenhuma linha da tabela tenha sido selecionada
@@ -79,15 +87,16 @@ export default function TableComponent() {
         })
 
         // Dados para os inputs do modal
-        setIDInput(data[selectedIndex].id)
-        setNameInput(data[selectedIndex].name)
-        setSurnameInput(data[selectedIndex].surname)
-        setStatusInput(data[selectedIndex].status)
+        setIDInput(tableData[selectedIndex].id)
+        setNameInput(tableData[selectedIndex].name)
+        setSurnameInput(tableData[selectedIndex].surname)
+        setStatusInput(tableData[selectedIndex].status)
         break
     }
 
     setIsModalOpen(true)
   }
+
 
   // Paginação
   const rowsPerPage = 10
@@ -142,6 +151,7 @@ export default function TableComponent() {
     setCurrentPage(page)
   }
 
+
   function handleSearch(searchValue: string): void {
     if (data.length <= 0) return
     handlePagination(1)
@@ -151,13 +161,11 @@ export default function TableComponent() {
       return
     }
 
-    const allColumns: string[] = Object.keys(data[0])
-
     // Busca em todas as colunas se existe algum dado relacionado ao que foi pesquisado
     const searchList = data.filter((item: any) => {
-      for (let i = 0; i < allColumns.length; i++) {
+      for (let i = 0; i < dataKeys.length; i++) {
         const searchValueFormatted: string = searchValue.trim().toLowerCase()
-        const itemColumnFormatted: string = item[allColumns[i]].toString().trim().toLowerCase()
+        const itemColumnFormatted: string = item[dataKeys[i]].toString().trim().toLowerCase()
 
         if (searchValueFormatted == itemColumnFormatted) return item
       }
@@ -167,13 +175,14 @@ export default function TableComponent() {
     setTableData(searchList.slice(0, 10))
   }
 
-  function handleSelectTableRow(id: string): void {
+
+  function handleSelectTableRow(index: number): void {
     // Set for enviado o id corretamente
-    if (!id) return
+    if (index < 0) return
 
     // Seleciona a linha
-    document.getElementById(id)!.click()
-    setSelectedIndex(parseInt(id) - 1)
+    document.getElementById(index.toString())!.click()
+    setSelectedIndex(index)
   }
 
   function handleTheme(): void {
@@ -189,6 +198,32 @@ export default function TableComponent() {
       setTheme((value) => value !== 'light' ? 'light' : 'dark')
     }, 15);
   }
+
+
+  function handleSort(column: string): void {
+    const orderBy: 'asc' | 'desc' = sortColumn.orderBy == 'asc' ? 'desc' : 'asc'
+
+    // Ordena em ordem crescente ou decrescente
+    const sortResult = dataFormatted.sort((a, b) => {
+      if (a[column] > b[column]) {
+        return orderBy == 'asc' ? 1 : -1
+      }
+
+      if (a[column] < b[column]) {
+        return orderBy == 'asc' ? -1 : 1
+      }
+
+      return 0
+    })
+
+    setSortColumn({
+      column: column,
+      orderBy: orderBy
+    })
+    setDataFormatted(sortResult)
+    setTableData(sortResult.slice(0, 10))
+  }
+
 
   return (
     <main data-bs-theme={theme}>
@@ -228,15 +263,15 @@ export default function TableComponent() {
           {/* Buttons */}
           <div className={style.buttons}>
             <Button variant='primary' onClick={() => handleButtonAction('add')}>
-              <FontAwesomeIcon icon={faAdd} style={{ marginRight: 8 }} className={style.faIcon} />
+              <FontAwesomeIcon icon={faAdd} className={style.buttonsIcon} />
               Add
             </Button>
             <Button variant='primary' onClick={() => handleButtonAction('edit')}>
-              <FontAwesomeIcon icon={faEdit} style={{ marginRight: 8 }} className={style.faIcon} />
+              <FontAwesomeIcon icon={faEdit} className={style.buttonsIcon} />
               Edit
             </Button>
             <Button variant='danger' onClick={() => handleButtonAction('delete')}>
-              <FontAwesomeIcon icon={faTrash} style={{ marginRight: 8 }} className={style.faIcon} />
+              <FontAwesomeIcon icon={faTrash} className={style.buttonsIcon} />
               Delete
             </Button>
           </div>
@@ -246,36 +281,64 @@ export default function TableComponent() {
         <div className={style.table}>
           <Table responsive hover className={style.tableComponent}>
             <thead>
-              <tr className='d-flex'>
-                <th className='col-1'>#</th>
-                <th className='col-1'>ID</th>
-                <th className='col-4'>Name</th>
-                <th className='col-4'>Surname</th>
-                <th className='col-2'>Status</th>
+              <tr>
+                <th>#</th>
+                {
+                  dataKeys.map((key: string, index: number) => <th onClick={() => handleSort(key)} key={index}>
+                    <div className={style.tableComponentThContent}>
+                      {key}
+                      <div>
+                        <FontAwesomeIcon
+                          icon={faSort}
+                          className={style.tableComponentSortIcon}
+                          style={{
+                            color: '#8a8a8a',
+                            opacity: sortColumn!.column !== key ? '1' : '0'
+                          }}
+                        />
+                        <FontAwesomeIcon
+                          icon={faSortUp}
+                          className={style.tableComponentSortIcon}
+                          style={{
+                            opacity: (sortColumn.column == key && sortColumn.orderBy == 'asc') ? '1' : '0'
+                          }}
+                        />
+                        <FontAwesomeIcon
+                          icon={faSortDown}
+                          className={style.tableComponentSortIcon}
+                          style={{
+                            opacity: (sortColumn.column == key && sortColumn.orderBy == 'desc') ? '1' : '0'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </th>
+                  )
+                }
               </tr>
             </thead>
+
             <tbody>
               {
-                tableData.map((item, index) => {
+                tableData.map((item: any, index: number) => {
                   return (
                     <tr
-                      className='d-flex'
-                      onClick={() => handleSelectTableRow(item.id.toString())}
+                      onClick={() => handleSelectTableRow(index)}
                       key={index}
                     >
-                      <td className='col-1'>
-                        <FormCheck type='radio' id={item.id.toString()} name='tableItem' />
+                      <td>
+                        <FormCheck type='radio' id={index.toString()} name='tableItem' />
                       </td>
-                      <td className='col-1'>{item.id.toString()}</td>
-                      <td className='col-4'>{item.name}</td>
-                      <td className='col-4'>{item.surname}</td>
-                      <td className='col-2'>
+                      {
+                        dataKeys.map((key: string, index: number) => <td key={index}>{item[key].toString()}</td>)
+                      }
+                      {/* <td>
                         {
                           item.status == 'Active'
                             ? <Badge bg='success'>Active</Badge>
                             : <Badge bg='danger'>Inactive</Badge>
                         }
-                      </td>
+                      </td> */}
                     </tr>
                   )
                 })

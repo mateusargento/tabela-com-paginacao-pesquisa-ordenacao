@@ -48,11 +48,27 @@ main {
     justify-content: flex-end;
 }
 
-.tableComponent td {
+.buttonsIcon {
+    margin-right: 8px;
+}
+
+.tableComponent {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
+}
+
+.tableComponentThContent {
+    display: flex;
+    justify-content: space-between;
+}
+
+.tableComponentSortIcon {
+    position: absolute;
+    transition: 0.3s;
+    margin: 4px 0 0 -12px;
+    transition: 0.2s;
 }
 
 .tableComponent td input[type=radio] {
