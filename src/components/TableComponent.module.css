@@ -35,47 +35,80 @@ main {
     gap: var(--gap);
 }
 
-.inputs {
+.inputsContent {
     display: grid;
     grid-template-columns: calc(var(--contentWidth) / 2) auto;
     align-items: flex-end;
 }
 
-.buttons {
+.searchInput{
+    box-shadow: 0px 4px 4px light-dark(#0f0f0f28, #040404);
+}
+
+.buttonContent {
     height: min-content;
     display: flex;
     gap: var(--gap);
     justify-content: flex-end;
 }
 
+.button {
+    box-shadow: 0px 4px 8px light-dark(#0f0f0f28, #040404);
+}
+
 .buttonsIcon {
     margin-right: 8px;
 }
 
-.tableComponent {
+.table {
+    box-shadow: 0px 4px 8px light-dark(#0f0f0f28, #040404);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
 }
 
-.tableComponentThContent {
+.tableThContent {
     display: flex;
     justify-content: space-between;
 }
 
-.tableComponentSortIcon {
+.tableThIcons {
+    display: flex;
+    justify-content: center;
+}
+
+.tableThIconsSortIcon {
     position: absolute;
     transition: 0.3s;
-    margin: 4px 0 0 -12px;
+    margin: 4px 0 0 -8px;
     transition: 0.2s;
 }
 
-.tableComponent td input[type=radio] {
+.table td input[type=radio] {
     transition: 0.1s;
 }
 
-.pagination {
+.paginationContent {
     display: flex;
     justify-content: flex-end;
+}
+
+.pagination {
+    box-shadow: 0px 4px 8px light-dark(#0f0f0f28, #040404);
+}
+
+.modalTitle {
+    font-size: 24px;
+    color: light-dark(var(--fontColorLight), var(--fontColorDark));
+}
+
+.modalForm {
+    display: flex;
+    flex-direction: column;
+    gap: 8px
+}
+
+.modalFormLabel {
+    color: light-dark(var(--fontColorLight), var(--fontColorDark));
 }

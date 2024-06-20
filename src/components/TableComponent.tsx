@@ -24,7 +24,7 @@ export default function TableComponent() {
     orderBy: 'desc',
   })
   const [tableData, setTableData] = useState<Array<any>>([]) // O que é mostrado na tabela
-  const [tableStyle, ___] = useState<{type: string, columnsSize: string[]}>({
+  const [tableStyle, ___] = useState<{ type: string, columnsSize: string[] }>({
     type: 'd-flex',
     columnsSize: ['col-1', 'col-2', 'col-4', 'col-4', 'col-1']
   })
@@ -36,6 +36,14 @@ export default function TableComponent() {
   })
   // Paginação
   const [currentPage, setCurrentPage] = useState<number>()
+  const toastTheme: any = theme == 'dark'
+    ? {
+      style: {
+        background: '#212529',
+        color: '#f0f0f0',
+      },
+    }
+    : {}
 
 
   useEffect(() => {
@@ -64,7 +72,12 @@ export default function TableComponent() {
         break
       case 'edit':
         // Não permite continuar sem que nenhuma linha da tabela tenha sido selecionada
-        if (selectedIndex == undefined) return
+        if (selectedIndex == undefined) {
+          toast.error('Choose a row to edit',
+            { ...toastTheme, icon: '⚠️', }
+          )
+          return
+        }
 
         setModalData({
           title: 'Edit',
@@ -79,7 +92,12 @@ export default function TableComponent() {
         break
       case 'delete':
         // Não permite continuar sem que nenhuma linha da tabela tenha sido selecionada
-        if (selectedIndex == undefined) return
+        if (selectedIndex == undefined) {
+          toast.error('Choose a row to delete',
+            { ...toastTheme, icon: '⚠️', }
+          )
+          return
+        }
 
         setModalData({
           title: 'Delete',
@@ -167,7 +185,10 @@ export default function TableComponent() {
         const searchValueFormatted: string = searchValue.trim().toLowerCase()
         const itemColumnFormatted: string = item[dataKeys[i]].toString().trim().toLowerCase()
 
-        if (searchValueFormatted == itemColumnFormatted) return item
+        // Pesquisa em todos os campos se em algum campo tem algum trecho com termo pesquisado
+        const regExp = new RegExp(`\\b${searchValueFormatted}\\w*`, 'gi');
+        const matchResult: RegExpMatchArray | null = itemColumnFormatted.match(regExp)
+        if (matchResult) return item
       }
     })
 
@@ -201,7 +222,11 @@ export default function TableComponent() {
 
 
   function handleSort(column: string): void {
-    const orderBy: 'asc' | 'desc' = sortColumn.orderBy == 'asc' ? 'desc' : 'asc'
+    // Escolhe entre ordem crescente ou decrescente
+    // Caso altere a coluna para ordenar, começa com ordem crescente
+    const orderBy: 'asc' | 'desc' = sortColumn.column == column
+      ? sortColumn.orderBy == 'asc' ? 'desc' : 'asc'
+      : sortColumn.orderBy = 'asc'
 
     // Ordena em ordem crescente ou decrescente
     const sortResult = dataFormatted.sort((a, b) => {
@@ -245,7 +270,7 @@ export default function TableComponent() {
           </Form.Label>
         </div>
 
-        <div className={style.inputs}>
+        <div className={style.inputsContent}>
           {/* Search Input */}
           <Form className={style.search}>
             <Form.Label htmlFor='searchInput'>Search</Form.Label>
@@ -261,16 +286,16 @@ export default function TableComponent() {
           </Form>
 
           {/* Buttons */}
-          <div className={style.buttons}>
-            <Button variant='primary' onClick={() => handleButtonAction('add')}>
+          <div className={style.buttonContent}>
+            <Button variant='primary' onClick={() => handleButtonAction('add')} className={style.button}>
               <FontAwesomeIcon icon={faAdd} className={style.buttonsIcon} />
               Add
             </Button>
-            <Button variant='primary' onClick={() => handleButtonAction('edit')}>
+            <Button variant='primary' onClick={() => handleButtonAction('edit')} className={style.button}>
               <FontAwesomeIcon icon={faEdit} className={style.buttonsIcon} />
               Edit
             </Button>
-            <Button variant='danger' onClick={() => handleButtonAction('delete')}>
+            <Button variant='danger' onClick={() => handleButtonAction('delete')} className={style.button}>
               <FontAwesomeIcon icon={faTrash} className={style.buttonsIcon} />
               Delete
             </Button>
@@ -279,40 +304,46 @@ export default function TableComponent() {
 
         {/* Table */}
         <div className={style.table}>
-          <Table responsive hover className={style.tableComponent}>
+          <Table responsive hover style={{ marginBottom: 0 }} >
             <thead>
-              <tr>
-                <th>#</th>
+              <tr className={tableStyle.type}>
+                <th className={tableStyle.columnsSize[0]}>#</th>
                 {
-                  dataKeys.map((key: string, index: number) => <th onClick={() => handleSort(key)} key={index}>
-                    <div className={style.tableComponentThContent}>
-                      {key}
-                      <div>
-                        <FontAwesomeIcon
-                          icon={faSort}
-                          className={style.tableComponentSortIcon}
-                          style={{
-                            color: '#8a8a8a',
-                            opacity: sortColumn!.column !== key ? '1' : '0'
-                          }}
-                        />
-                        <FontAwesomeIcon
-                          icon={faSortUp}
-                          className={style.tableComponentSortIcon}
-                          style={{
-                            opacity: (sortColumn.column == key && sortColumn.orderBy == 'asc') ? '1' : '0'
-                          }}
-                        />
-                        <FontAwesomeIcon
-                          icon={faSortDown}
-                          className={style.tableComponentSortIcon}
-                          style={{
-                            opacity: (sortColumn.column == key && sortColumn.orderBy == 'desc') ? '1' : '0'
-                          }}
-                        />
+                  dataKeys.map((key: string, index: number) => {
+                    return <th
+                      className={tableStyle.columnsSize[index + 1]}
+                      onClick={() => handleSort(key)}
+                      key={index}
+                    >
+                      <div className={style.tableThContent}>
+                        {/* Title */}
+                        {key}
+
+                        {/* Icons */}
+                        <div className={style.tableThIcons}>
+                          <FontAwesomeIcon
+                            icon={faSort}
+                            className={style.tableThIconsSortIcon}
+                            style={{
+                              color: '#8a8a8a',
+                              opacity: sortColumn!.column !== key ? '1' : '0'
+                            }} />
+                          <FontAwesomeIcon
+                            icon={faSortUp}
+                            className={style.tableThIconsSortIcon}
+                            style={{
+                              opacity: (sortColumn.column == key && sortColumn.orderBy == 'asc') ? '1' : '0'
+                            }} />
+                          <FontAwesomeIcon
+                            icon={faSortDown}
+                            className={style.tableThIconsSortIcon}
+                            style={{
+                              opacity: (sortColumn.column == key && sortColumn.orderBy == 'desc') ? '1' : '0'
+                            }} />
+                        </div>
                       </div>
-                    </div>
-                  </th>
+                    </th>
+                  }
                   )
                 }
               </tr>
@@ -323,14 +354,20 @@ export default function TableComponent() {
                 tableData.map((item: any, index: number) => {
                   return (
                     <tr
+                      className={tableStyle.type}
                       onClick={() => handleSelectTableRow(index)}
                       key={index}
                     >
-                      <td>
+                      <td className={tableStyle.columnsSize[0]}>
                         <FormCheck type='radio' id={index.toString()} name='tableItem' />
                       </td>
                       {
-                        dataKeys.map((key: string, index: number) => <td key={index}>{item[key].toString()}</td>)
+                        dataKeys.map((key: string, index: number) => <td
+                          className={tableStyle.columnsSize[index + 1]}
+                          key={index}
+                        >
+                          {item[key].toString()}
+                        </td>)
                       }
                       {/* <td>
                         {
@@ -345,96 +382,117 @@ export default function TableComponent() {
               }
             </tbody>
           </Table>
+        </div>
 
-          {/* Pagination */}
-          <div className={style.pagination}>
-            <Pagination>
-              <Pagination.First
-                disabled={currentPage == 1 ? true : false}
-                onClick={() => handlePagination(1)} />
-              <Pagination.Prev
-                disabled={currentPage == 1 ? true : false}
-                onClick={() => handlePagination(currentPage! - 1)}
-              />
-              {paginationItens()}
-              <Pagination.Next
-                disabled={currentPage == Math.ceil(dataFormatted.length / rowsPerPage) ? true : false}
-                onClick={() => handlePagination(currentPage! + 1)}
-              />
-              <Pagination.Last
-                disabled={currentPage == Math.ceil(dataFormatted.length / rowsPerPage) ? true : false}
-                onClick={() => handlePagination(Math.ceil(dataFormatted.length / rowsPerPage))} />
-            </Pagination>
-          </div>
+        {/* Pagination */}
+        <div className={style.paginationContent}>
+          <Pagination className={style.pagination}>
+            <Pagination.First
+              disabled={currentPage == 1 ? true : false}
+              onClick={() => handlePagination(1)} />
+            <Pagination.Prev
+              disabled={currentPage == 1 ? true : false}
+              onClick={() => handlePagination(currentPage! - 1)}
+            />
+            {paginationItens()}
+            <Pagination.Next
+              disabled={currentPage == Math.ceil(dataFormatted.length / rowsPerPage) ? true : false}
+              onClick={() => handlePagination(currentPage! + 1)}
+            />
+            <Pagination.Last
+              disabled={currentPage == Math.ceil(dataFormatted.length / rowsPerPage) ? true : false}
+              onClick={() => handlePagination(Math.ceil(dataFormatted.length / rowsPerPage))} />
+          </Pagination>
         </div>
 
         {/* Modal */}
         <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} data-bs-theme={theme}>
           <Modal.Header closeButton>
-            <Modal.Title>{modalData.title}</Modal.Title>
+            <Modal.Title>
+              <span className={style.modalTitle}>{modalData.title}</span>
+            </Modal.Title>
           </Modal.Header>
 
           <Modal.Body>
-            <Form>
+            <Form className={style.modalForm}>
               {/* ID */}
-              <Form.Label htmlFor='id'>ID</Form.Label>
-              <Form.Control
-                type='number'
-                id='id'
-                value={idInput}
-                onChange={(e) => setIDInput(parseInt(e.target.value))}
-                disabled
-              />
+              <div>
+                <Form.Label htmlFor='id' >
+                  <span className={style.modalFormLabel}>ID</span>
+                </Form.Label>
+                <Form.Control
+                  type='number'
+                  id='id'
+                  className={style.modalFormInput}
+                  value={idInput}
+                  onChange={(e) => setIDInput(parseInt(e.target.value))}
+                  disabled
+                />
+              </div>
 
               {/* Name */}
-              <Form.Label htmlFor='name'>Name</Form.Label>
-              <Form.Control
-                type='text'
-                id='name'
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                disabled={modalData.isAllInputsDisabled}
-              />
+              <div>
+                <Form.Label htmlFor='name'>
+                  <span className={style.modalFormLabel}>Name</span>
+                </Form.Label>
+                <Form.Control
+                  type='text'
+                  id='name'
+                  className={style.modalFormInput}
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  disabled={modalData.isAllInputsDisabled}
+                />
+              </div>
 
               {/* Surname */}
-              <Form.Label htmlFor='surname'>Surname</Form.Label>
-              <Form.Control
-                type='text'
-                id='surname'
-                value={surnameInput}
-                onChange={(e) => setSurnameInput(e.target.value)}
-                disabled={modalData.isAllInputsDisabled}
-              />
+              <div>
+                <Form.Label htmlFor='surname'>
+                  <span className={style.modalFormLabel}>Surname</span>
+                </Form.Label>
+                <Form.Control
+                  type='text'
+                  id='surname'
+                  className={style.modalFormInput}
+                  value={surnameInput}
+                  onChange={(e) => setSurnameInput(e.target.value)}
+                  disabled={modalData.isAllInputsDisabled}
+                />
+              </div>
 
               {/* Status */}
-              <Form.Label htmlFor='status'>Status</Form.Label>
-              <Form.Select
-                id='status'
-                value={statusInput}
-                onChange={(e) => setStatusInput(e.target.value as 'Active' | 'Inactive')}
-                disabled={modalData.isAllInputsDisabled}
-              >
-                <option value={'Active'}>Active</option>
-                <option value={'Inactive'}>Inactive</option>
-              </Form.Select>
+              <div>
+                <Form.Label htmlFor='status'>
+                  <span className={style.modalFormLabel}>Status</span>
+                </Form.Label>
+                <Form.Select
+                  id='status'
+                  className={style.modalFormInput}
+                  value={statusInput}
+                  onChange={(e) => setStatusInput(e.target.value as 'Active' | 'Inactive')}
+                  disabled={modalData.isAllInputsDisabled}
+                >
+                  <option value={'Active'}>Active</option>
+                  <option value={'Inactive'}>Inactive</option>
+                </Form.Select>
+              </div>
             </Form>
           </Modal.Body>
 
           <Modal.Footer>
-            <Button variant='secondary' onClick={() => setIsModalOpen(false)}>Close</Button>
-            <Button variant='primary' onClick={() => {
-              setIsModalOpen(false)
-              toast.success('Action completed',
-                theme == 'dark'
-                  ? {
-                    style: {
-                      background: '#212529',
-                      color: '#f0f0f0',
-                    },
-                  }
-                  : {}
-              )
-            }}>Confirm</Button>
+            <Button variant='secondary'
+              onClick={() => setIsModalOpen(false)}>
+              Close
+            </Button>
+            <Button variant='primary'
+              onClick={() => {
+                setIsModalOpen(false)
+                toast.success('Action completed',
+                  toastTheme
+                )
+              }}>
+              Confirm
+            </Button>
           </Modal.Footer>
         </Modal>
 
