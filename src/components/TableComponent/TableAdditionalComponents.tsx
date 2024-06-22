@@ -8,8 +8,9 @@ export type ButtonActionType = {
   handleButtonAction: (action: 'add' | 'edit' | 'delete' | 'view') => void
   type: 'add' | 'delete' | 'edit' | 'view'
   variant: string
+  disabled?: boolean
 }
-export function ButtonAction({ handleButtonAction, type, variant }: ButtonActionType) {
+export function ButtonAction({ disabled, handleButtonAction, type, variant }: ButtonActionType) {
   let icon: IconDefinition
   switch (type) {
     case 'add':
@@ -30,7 +31,7 @@ export function ButtonAction({ handleButtonAction, type, variant }: ButtonAction
   }
 
   return (
-    <Button variant={variant} onClick={() => handleButtonAction(type)} className={style.button}>
+    <Button variant={variant} onClick={() => handleButtonAction(type)} className={style.button} disabled={disabled ?? false}>
       <FontAwesomeIcon icon={icon}
         className={style.buttonsIcon}
       />
@@ -53,7 +54,6 @@ export function ModalComponent(
 ) {
   return (
     <div>
-      {/* Modal */}
       <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} data-bs-theme={theme}>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -102,7 +102,7 @@ export function PaginationItems({
     if (dataFormatted.length <= 0) return []
 
     let paginationItems: Array<JSX.Element> = []
-    //Divide a quantidade de dados pelo linhas por página na tabela
+    //Divide a quantidade de dados por linhas por página na tabela
     const totalPages: number = Math.ceil((dataFormatted.length / rowsPerPage))
 
     // Gera os botões da paginação
@@ -152,6 +152,15 @@ export type TableHeadParams = {
   title: string,
 }
 export function TableHead({ columnKey, columnSize, handleSort, sortColumn, title }: TableHeadParams) {
+  /*
+    O parâmetro "columnSize" é formado por "col-1", "col-2" assim por diante até o número 12
+    A variável "columnSizeWidth" recebe o valor que vem depois do termo "col-" que é multiplicado por 10 na variável "maxStringSize", formando um limitador de caracteres.
+    Se o número de caracteres enviado no parâmetro "title" ultrapassar o limite do cálculo anterior, faz uma quebra na string e acrescente reticências (...) ao final
+  */
+  const columnSizeWidth = parseInt(columnSize.split('-')[1])
+  const maxStringSize = 10 * columnSizeWidth
+  const titleFormatted = title.length > maxStringSize ? `${title.substring(0, maxStringSize)}...` : title
+
   return (
     <th
       className={columnSize}
@@ -160,7 +169,7 @@ export function TableHead({ columnKey, columnSize, handleSort, sortColumn, title
     >
       <div className={style.tableThContent}>
         {/* Title */}
-        {title}
+        {titleFormatted}
 
         {/* Icons */}
         <div className={style.tableThIcons} style={columnKey == '#' ? { opacity: 0 } : { opacity: 1 }}>

@@ -1,4 +1,5 @@
 :root {
+    --contentWidthMobile: 90%;
     --contentWidth: 80%;
     --backgroundColorLight: #f0f0f0;
     --fontColorLight: #0f0f0f;
@@ -23,7 +24,7 @@ main {
 }
 
 .content {
-    width: var(--contentWidth);
+    width: var(--contentWidthMobile);
     display: flex;
     flex-direction: column;
     gap: calc(var(--gap) * 4);
@@ -38,12 +39,13 @@ main {
 
 /* ---- Inputs ---- */
 .inputsContent {
-    display: grid;
-    grid-template-columns: calc(var(--contentWidth) / 2) auto;
-    align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
 }
 
-.searchInput{
+.searchInput {
     box-shadow: 0px 4px 4px light-dark(#0f0f0f28, #040404);
 }
 
@@ -51,7 +53,8 @@ main {
 /* ---- Buttons ---- */
 .buttonContent {
     height: min-content;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto auto auto auto;
     justify-content: flex-end;
     gap: var(--gap);
 }
@@ -76,22 +79,31 @@ main {
 
 .tableThContent {
     display: flex;
-    justify-content: space-between;
+    align-items: flex-start;
+    justify-content: center;
+    flex-direction: column;
 }
 
 .tableThIcons {
     display: flex;
+    padding-top: 4px;
     justify-content: center;
 }
 
 .tableThIconsSortIcon {
-    position: absolute;
-    transition: 0.3s;
-    margin: 4px 0 0 -8px;
     transition: 0.2s;
 }
 
-th, td {
+.tableThIconsSortIcon:nth-child(2) {
+    margin-left: -9px;
+}
+
+.tableThIconsSortIcon:last-child {
+    margin-left: -8.4px;
+}
+
+th,
+td {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -127,4 +139,32 @@ th, td {
 
 .modalFormLabel {
     color: light-dark(var(--fontColorLight), var(--fontColorDark));
+}
+
+/* ---- Desktop Version ---- */
+@media only screen and (min-width: 1024px) {
+    .content {
+        width: var(--contentWidth);
+    }
+    
+    /* ---- Inputs ---- */
+    .inputsContent {
+        display: grid;
+        grid-template-columns: calc(var(--contentWidth) / 2) auto;
+        align-items: flex-end;
+        gap: none;
+    }
+
+    /* ---- Buttons ---- */
+    .buttonContent {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* ---- Table ---- */
+    .tableThContent {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+    }
 }

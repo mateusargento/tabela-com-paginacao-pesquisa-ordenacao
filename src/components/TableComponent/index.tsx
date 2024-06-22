@@ -15,26 +15,26 @@ export default function TableComponent() {
 
   const [inputs, setInputs] = useState<any>(inputsObject)
   const [searchInput, setSearchInput] = useState<string>('')
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  const [theme, setTheme] = useState<'dark' | 'light'>('light')
   const [rowsPerPage, _____] = useState<number>(10)
   const toastTheme = theme == 'dark' ? { style: { background: '#212529', color: '#f0f0f0' } } : {}
   // ---- Table ----
   const [data, _] = useState<any[]>(json) // Guarda o dado original vindo por JSON
   const [dataKeys, __] = useState<string[]>(Object.keys(json[0]))
   const [dataFormatted, setDataFormatted] = useState<any[]>(json) // Guarda o dado manipulado por filtro, ordenação ou paginação
-  const [selectedIndex, setSelectedIndex] = useState<number | undefined>()
+  const [selectedIndex, setSelectedIndex] = useState<number | undefined>() // Linha selecionada na tabela
   const [sortColumn, setSortColumn] = useState<{ column: string, orderBy: 'asc' | 'desc' }>({
     column: '', orderBy: 'desc',
   })
   const [tableData, setTableData] = useState<any[]>([]) // O que é mostrado na tabela
-  const [tableStyleType, ___] = useState<string>('d-flex flex-wrap')
+  const [tableStyleType, ___] = useState<string>('d-flex')
   // ---- Modal ----
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [modalData, setModalData] = useState<{
     title: string, isAllInputsDisabled: boolean, isConfirmButtonDisabled: boolean,
   }>({ title: '', isAllInputsDisabled: false, isConfirmButtonDisabled: false, })
   // ---- Pagination ----
-  const [currentPage, setCurrentPage] = useState<number>()
+  const [currentPage, setCurrentPage] = useState<number>(1)
 
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export default function TableComponent() {
           setInputs((value: any) => { return { ...value, [key]: '' } })
         })
 
-        // Desmarca o "input radio" selecionado, caso haja, antes de trocar de página
+        // Desmarca o "input radio" selecionado, caso haja, antes de abrir o modal
         const inputsRadio: any = document.querySelectorAll('input[type=radio]')
         if (inputsRadio.length > 0) {
           for (let i = 0; i < inputsRadio.length; i++) {
@@ -69,7 +69,7 @@ export default function TableComponent() {
         }
         break
       case 'edit':
-        // Não permite continuar sem que nenhuma linha da tabela tenha sido selecionada
+        // Não permite continuar sem que alguma linha da tabela tenha sido selecionada
         if (selectedIndex == undefined) {
           toast.error('Choose a row to edit',
             { ...toastTheme, icon: '⚠️', }
@@ -89,7 +89,7 @@ export default function TableComponent() {
         })
         break
       case 'delete':
-        // Não permite continuar sem que nenhuma linha da tabela tenha sido selecionada
+        // Não permite continuar sem que alguma linha da tabela tenha sido selecionada
         if (selectedIndex == undefined) {
           toast.error('Choose a row to delete',
             { ...toastTheme, icon: '⚠️', }
@@ -109,7 +109,7 @@ export default function TableComponent() {
         })
         break
       case 'view':
-        // Não permite continuar sem que nenhuma linha da tabela tenha sido selecionada
+        // Não permite continuar sem que alguma linha da tabela tenha sido selecionada
         if (selectedIndex == undefined) {
           toast.error('Choose a row to view',
             { ...toastTheme, icon: '⚠️', }
@@ -149,17 +149,17 @@ export default function TableComponent() {
     }
 
     /*
-      Separa os registros em páginas
+      Separa os registros para cada página
       
       Exemplo: 
       A variável "page" define a página solicitada, que neste exemplo é igual a 2
-      A variável "rowsPerPage" é igual a 10.
+      A variável "rowsPerPage", neste exemplo é igual a 10.
       A variável "firstRowIndex" terá o valor ((10 * 2) - 10) = 10
       A variável "lastRowIndex" terá o valor ((10 * 2)) = 20
       A função slice separa os dados entre os indexs 10 e 20 que resultará nos indexs 10 ao 19 como resultado
     */
     const firstRowIndex: number = ((rowsPerPage * page) - rowsPerPage)
-    const lastRowIndex: number = ((rowsPerPage * page))
+    const lastRowIndex: number = (rowsPerPage * page)
 
     const result: any[] = dataFormatted.slice(firstRowIndex, lastRowIndex)
     setTableData(result)
@@ -170,6 +170,7 @@ export default function TableComponent() {
   function handleSearch(searchValue: string): void {
     if (data.length <= 0) return
     handlePagination(1)
+    // Se o input de pesquisa não tiver caracteres, mostra o resultado inicial
     if (searchValue == '') {
       setDataFormatted(data)
       setTableData(data.slice(0, 10))
@@ -195,7 +196,7 @@ export default function TableComponent() {
 
 
   function handleSelectTableRow(index: number): void {
-    // Set for enviado o id corretamente
+    // Se não for enviado o index corretamente
     if (index < 0) return
 
     // Seleciona a linha
@@ -207,12 +208,12 @@ export default function TableComponent() {
   function handleTheme(): void {
     let main: HTMLElement = document.getElementsByTagName('main')[0]
 
-    // Muda a cor do que não é do Bootstrap
-    main.style.colorScheme !== 'light'
-      ? main.style.colorScheme = 'light'
-      : main.style.colorScheme = 'dark'
+    // Muda o tema (as cores) do que não é do Bootstrap
+    main.style.colorScheme !== 'dark'
+      ? main.style.colorScheme = 'dark'
+      : main.style.colorScheme = 'light'
 
-    // Muda o tema do Bootstrap
+    // Muda o tema (as cores) do Bootstrap
     setTimeout(() => {
       setTheme((value) => value !== 'light' ? 'light' : 'dark')
     }, 15);
@@ -295,8 +296,8 @@ export default function TableComponent() {
         </div>
 
         {/* Table */}
-        <div className={style.table}>
-          <Table hover style={{ marginBottom: 0 }} >
+        <div className={style.table} style={{ borderRadius: '8px' }}>
+          <Table responsive hover striped style={{ marginBottom: 0 }} >
             <thead>
               <tr className={tableStyleType}>
                 <TableHead
@@ -321,7 +322,7 @@ export default function TableComponent() {
                   sortColumn={sortColumn}
                 />
                 <TableHead
-                  title='texto muiot grande que não cabe na tela que tem espaço para mostrar o texto'
+                  title='Surname'
                   columnKey='surname'
                   columnSize='col-4'
                   handleSort={handleSort}
@@ -334,7 +335,7 @@ export default function TableComponent() {
                   handleSort={handleSort}
                   sortColumn={sortColumn}
                 />
-              </tr>
+              </tr> 
             </thead>
 
             <tbody>
@@ -343,16 +344,16 @@ export default function TableComponent() {
                   return (
                     <tr className={tableStyleType} onClick={() => handleSelectTableRow(index)} key={index}>
                       <TableDataInput index={index} columnSize={'col-1'} />
-                      <TableData columnSize={'col-1'} >
+                      <TableData columnSize={'col-1'}>
                         {item.id}
                       </TableData>
-                      <TableData columnSize={'col-4'} >
+                      <TableData columnSize={'col-4'}>
                         {item.name}
                       </TableData>
-                      <TableData columnSize={'col-4'} >
+                      <TableData columnSize={'col-4'}>
                         {item.surname}
                       </TableData>
-                      <TableData columnSize={'col-2'} >
+                      <TableData columnSize={'col-2'}>
                         {
                           item.status == 'Active'
                             ? <Badge bg='success'>Active</Badge>
@@ -402,9 +403,7 @@ export default function TableComponent() {
                 type='number'
                 id='id'
                 className={style.modalFormInput}
-                // value={idInput}
                 value={inputs.id}
-                // onChange={(e) => setIDInput(parseInt(e.target.value))}
                 onChange={(e) => setInputs((value: any) => { return { ...value, ['id']: parseInt(e.target.value) } })}
                 disabled
               />
@@ -419,9 +418,7 @@ export default function TableComponent() {
                 type='text'
                 id='name'
                 className={style.modalFormInput}
-                // value={nameInput}
                 value={inputs.name}
-                // onChange={(e) => setNameInput(e.target.value)}
                 onChange={(e) => setInputs((value: any) => { return { ...value, ['name']: e.target.value } })}
                 disabled={modalData.isAllInputsDisabled}
               />
@@ -436,9 +433,7 @@ export default function TableComponent() {
                 type='text'
                 id='surname'
                 className={style.modalFormInput}
-                // value={surnameInput}
                 value={inputs.surname}
-                // onChange={(e) => setSurnameInput(e.target.value)}
                 onChange={(e) => setInputs((value: any) => { return { ...value, ['surname']: e.target.value } })}
                 disabled={modalData.isAllInputsDisabled}
               />
@@ -452,9 +447,7 @@ export default function TableComponent() {
               <Form.Select
                 id='status'
                 className={style.modalFormInput}
-                // value={statusInput}
                 value={inputs.status}
-                // onChange={(e) => setStatusInput(e.target.value as 'Active' | 'Inactive')}
                 onChange={(e) => setInputs((value: any) => { return { ...value, ['status']: e.target.value } })}
                 disabled={modalData.isAllInputsDisabled}
               >
