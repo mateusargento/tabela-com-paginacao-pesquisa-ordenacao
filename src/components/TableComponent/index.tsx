@@ -16,18 +16,18 @@ export default function TableComponent() {
   const [inputs, setInputs] = useState<any>(inputsObject)
   const [searchInput, setSearchInput] = useState<string>('')
   const [theme, setTheme] = useState<'dark' | 'light'>('light')
-  const [rowsPerPage, _____] = useState<number>(10)
+  const [rowsPerPage, _] = useState<number>(10)
   const toastTheme = theme == 'dark' ? { style: { background: '#212529', color: '#f0f0f0' } } : {}
   // ---- Table ----
-  const [data, _] = useState<any[]>(json) // Guarda o dado original vindo por JSON
-  const [dataKeys, __] = useState<string[]>(Object.keys(json[0]))
+  const [data, __] = useState<any[]>(json) // Guarda o dado original vindo por JSON
+  const [dataKeys, ___] = useState<string[]>(Object.keys(json[0]))
   const [dataFormatted, setDataFormatted] = useState<any[]>(json) // Guarda o dado manipulado por filtro, ordenação ou paginação
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>() // Linha selecionada na tabela
   const [sortColumn, setSortColumn] = useState<{ column: string, orderBy: 'asc' | 'desc' }>({
     column: '', orderBy: 'desc',
   })
   const [tableData, setTableData] = useState<any[]>([]) // O que é mostrado na tabela
-  const [tableStyleType, ___] = useState<string>('d-flex')
+  const [tableStyleType, ____] = useState<string>('d-flex')
   // ---- Modal ----
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [modalData, setModalData] = useState<{

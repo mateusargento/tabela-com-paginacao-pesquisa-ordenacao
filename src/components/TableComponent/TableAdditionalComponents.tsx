@@ -10,6 +10,13 @@ export type ButtonActionType = {
   variant: string
   disabled?: boolean
 }
+/**
+ * Cria um botão de ação dos tipos "Add", "Edit", "Delete" ou "View".
+ * 
+ * @property {'add' | 'delete' | 'edit' | 'view'} type Qual ação ele realizará ao abrir o modal.
+ * @property {string} variant Estilização do botão com os padrões estabelecidos pelo Bootstrap. As opções são: "primary", "secondary", "success", "warning", "danger", "info", "light", "dark" e "link".
+ * @property {boolean} disabled Define se o botão estará desabilitado ou não. Se não for definido, estará habilitado.
+ */
 export function ButtonAction({ disabled, handleButtonAction, type, variant }: ButtonActionType) {
   let icon: IconDefinition
   switch (type) {
@@ -49,6 +56,15 @@ export type ModalParams = {
   setIsModalOpen: any,
   theme: string,
 }
+/**
+ * Modal para realizar as funcionalidades dos botões de ver, adicionar, editar e excluir dados.
+ * 
+ * @property {function} confirmActionModal Ação do botão "Confirm" no modal.
+ * @property {boolean} isModalOpen Controla a abertura e fechamento do modal.
+ * @property {Object} modalData Dados para preencher e personalizar o modal.
+ * @property {any} setIsModalOpen Altera o valor do hook "isModalOpen".
+ * @property {string} theme Define o tema do modal entre claro ou escuro.
+ */
 export function ModalComponent(
   { children, confirmActionModal, isModalOpen, modalData, setIsModalOpen, theme }: ModalParams
 ) {
@@ -90,6 +106,14 @@ export type PaginationItemsParams = {
   dataFormatted: any[],
   rowsPerPage: number,
 }
+/**
+ * Paginação da tabela principal.
+ * 
+ * @property {function} handlePagination Função que realiza as tarefas da paginação.
+ * @property {number} currentPage Página atual da tabela principal.
+ * @property {any[]} dataFormatted Dados formatados com paginação e formatados ou não com ordenação e pesquisa para preencher a tabela.
+ * @property {number} rowsPerPage Número de registros por página na tabela principal.
+ */
 export function PaginationItems({
   handlePagination,
   currentPage,
@@ -151,6 +175,15 @@ export type TableHeadParams = {
   sortColumn: { column: string, orderBy: 'asc' | 'desc' },
   title: string,
 }
+/**
+ * Faz a função da tag "th" com personalizações.
+ * 
+ * @property {string} columnKey Identificador único da tag. A key do JSON que ela representa.
+ * @property {string} columnSize Tamanho da coluna com a padronização do Bootstrap. As opções são: "col-1", "col-2", "col-3", "col-4", "col-5", "col-6", "col-7", "col-8", "col-9", "col-10", "col-11" e "col-12".
+ * @property {function} handleSort Responsavel por ordenar a tabela pela coluna escolhida de forma crescente ou decrescente.
+ * @property {Object} sortColumn Define por qual coluna a ordenação será realizada e se será em ordem crescente ou decrescente.
+ * @property {string} title Título da coluna.
+ */
 export function TableHead({ columnKey, columnSize, handleSort, sortColumn, title }: TableHeadParams) {
   /*
     O parâmetro "columnSize" é formado por "col-1", "col-2" assim por diante até o número 12
@@ -207,6 +240,12 @@ export type TableDataParams = {
   children: any,
   columnSize: string
 }
+/**
+ * Input radio para selecionar uma linha na tabela principal.
+ * 
+ * @property {string} columnSize Tamanho da coluna com a padronização do Bootstrap. As opções são: "col-1", "col-2", "col-3", "col-4", "col-5", "col-6", "col-7", "col-8", "col-9", "col-10", "col-11" e "col-12".
+ * @property {number} index Index que representa a linha da tabela principal.
+ */
 export function TableDataInput({ columnSize, index }: { columnSize: string, index: number }) {
   return (
     <td className={columnSize}>
@@ -214,6 +253,11 @@ export function TableDataInput({ columnSize, index }: { columnSize: string, inde
     </td>
   )
 }
+/**
+ * Faz a função da tag "td" com personalizações.
+ * 
+ * @property {string} columnSize Tamanho da coluna com a padronização do Bootstrap. As opções são: "col-1", "col-2", "col-3", "col-4", "col-5", "col-6", "col-7", "col-8", "col-9", "col-10", "col-11" e "col-12".
+ */
 export function TableData({ children, columnSize }: TableDataParams) {
   return (
     <td className={columnSize}>{children}</td>
