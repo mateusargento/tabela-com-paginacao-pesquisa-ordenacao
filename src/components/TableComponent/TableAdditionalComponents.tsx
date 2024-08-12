@@ -1,14 +1,15 @@
 import { Button, FormCheck, Modal, Pagination } from 'react-bootstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { IconDefinition, faAdd, faEdit, faEye, faSort, faSortDown, faSortUp, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { IconDefinition, faAdd, faEdit, faEye, faFileExcel, faPrint, faSort, faSortDown, faSortUp, faTrash } from '@fortawesome/free-solid-svg-icons'
 import style from './TableComponent.module.css'
 
 // ---- Action Buttons ----
 export type ButtonActionType = {
-  handleButtonAction: (action: 'add' | 'edit' | 'delete' | 'view') => void
-  type: 'add' | 'delete' | 'edit' | 'view'
+  handleButtonAction: (action: 'add' | 'edit' | 'delete' | 'view' | 'print' | 'excel') => void
+  type: 'add' | 'delete' | 'edit' | 'view' | 'print' | 'excel'
   variant: string
   disabled?: boolean
+  title?: string
 }
 /**
  * Cria um botão de ação dos tipos "Add", "Edit", "Delete" ou "View".
@@ -16,8 +17,9 @@ export type ButtonActionType = {
  * @property {'add' | 'delete' | 'edit' | 'view'} type Qual ação ele realizará ao abrir o modal.
  * @property {string} variant Estilização do botão com os padrões estabelecidos pelo Bootstrap. As opções são: "primary", "secondary", "success", "warning", "danger", "info", "light", "dark" e "link".
  * @property {boolean} disabled Define se o botão estará desabilitado ou não. Se não for definido, estará habilitado.
+ * @property {string} title Define o que será mostrado como texto do botão.
  */
-export function ButtonAction({ disabled, handleButtonAction, type, variant }: ButtonActionType) {
+export function ButtonAction({ disabled, handleButtonAction, title, type, variant }: ButtonActionType) {
   let icon: IconDefinition
   switch (type) {
     case 'add':
@@ -32,6 +34,12 @@ export function ButtonAction({ disabled, handleButtonAction, type, variant }: Bu
     case 'view':
       icon = faEye
       break
+    case 'print':
+      icon = faPrint
+      break
+    case 'excel':
+      icon = faFileExcel
+      break
     default:
       icon = faAdd
       break
@@ -42,7 +50,7 @@ export function ButtonAction({ disabled, handleButtonAction, type, variant }: Bu
       <FontAwesomeIcon icon={icon}
         className={style.buttonsIcon}
       />
-      {`${type[0].toUpperCase()}${type.substring(1)}`}
+      {title ?? `${type[0].toUpperCase()}${type.substring(1)}`}
     </Button>
   )
 }

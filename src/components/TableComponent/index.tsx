@@ -43,7 +43,7 @@ export default function TableComponent() {
   }, [])
 
 
-  function handleButtonAction(action: 'add' | 'edit' | 'delete' | 'view'): void {
+  function handleButtonAction(action: 'add' | 'edit' | 'delete' | 'view' | 'print' | 'excel'): void {
     // Personaliza o modal conforme o botão selecionado
     switch (action) {
       case 'add':
@@ -292,6 +292,16 @@ export default function TableComponent() {
             <ButtonAction variant='primary' type={'add'} handleButtonAction={handleButtonAction} />
             <ButtonAction variant='primary' type={'edit'} handleButtonAction={handleButtonAction} />
             <ButtonAction variant='danger' type={'delete'} handleButtonAction={handleButtonAction} />
+            <ButtonAction variant='primary' type={'print'} handleButtonAction={() => toast.success(
+              'Action completed',
+              toastTheme
+            )} />
+            <ButtonAction variant='primary'
+            type={'excel'} 
+            handleButtonAction={() => toast.success(
+              'Action completed',
+              toastTheme
+            )} />
           </div>
         </div>
 
@@ -335,7 +345,7 @@ export default function TableComponent() {
                   handleSort={handleSort}
                   sortColumn={sortColumn}
                 />
-              </tr> 
+              </tr>
             </thead>
 
             <tbody>
